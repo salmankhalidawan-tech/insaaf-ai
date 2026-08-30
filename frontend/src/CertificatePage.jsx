@@ -96,7 +96,7 @@ export default function CertificatePage() {
             <img
               src="/logo/lockup_horizontal.png"
               alt="Insaaf AI"
-              className="h-8 w-auto"
+              className="h-8 w-auto mix-blend-multiply"
             />
             <span className="font-mono text-2xs uppercase tracking-wider text-primary bg-primary/10 px-3 py-1.5 rounded-full">
               Public Verification
@@ -107,7 +107,7 @@ export default function CertificatePage() {
             <Seal passed={true} size={120} />
           </div>
 
-          <h1 className="font-display text-3xl md:text-4xl text-center text-emerald-700 mb-2 tracking-tight">
+          <h1 className="font-display text-3xl md:text-4xl text-center text-success mb-2 tracking-tight">
             INSAAF CERTIFIED
           </h1>
           <p className="text-center text-muted-foreground max-w-md mx-auto mb-8 leading-relaxed">
@@ -116,8 +116,8 @@ export default function CertificatePage() {
           </p>
 
           <div className="flex justify-center mb-8">
-            <div className="w-40 h-40 rounded-full border-4 border-emerald-600 bg-secondary flex flex-col items-center justify-center shadow-inner">
-              <span className="font-display text-6xl font-bold text-emerald-600 leading-none">
+            <div className="w-40 h-40 rounded-full border-4 border-success bg-secondary flex flex-col items-center justify-center shadow-inner">
+              <span className="font-display text-6xl font-bold text-success leading-none">
                 {cert.trust_score}
               </span>
               <span className="font-mono text-xs uppercase tracking-wider text-muted-foreground mt-2">

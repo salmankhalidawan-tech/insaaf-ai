@@ -23,7 +23,7 @@ export default function TrustDial({ score, size = 180, animate = true }) {
 
   const progress = (displayScore / 100) * circumference;
 
-  const color = score >= 70 ? "#059669" : score >= 40 ? "#D97706" : "#DC2626";
+  const color = score >= 70 ? "hsl(var(--success))" : score >= 40 ? "hsl(var(--accent))" : "hsl(var(--destructive))";
   const gradId = `trust-dial-grad-${size}`;
 
   return (

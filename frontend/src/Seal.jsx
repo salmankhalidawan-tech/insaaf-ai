@@ -1,5 +1,5 @@
 export default function Seal({ passed, size = 80, className = "" }) {
-  const color = passed ? "#059669" : "#DC2626";
+  const color = passed ? "hsl(var(--success))" : "hsl(var(--destructive))";
   const label = passed ? "INSAAF CERTIFIED" : "REVIEW REQUIRED";
   const pathId = `seal-arc-${passed ? "pass" : "fail"}`;
 

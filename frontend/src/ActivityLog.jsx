@@ -1,5 +1,6 @@
 import { Activity, Check, Circle, AlertCircle, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { AUDIT_STAGES } from "./auditStream";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ const statusIcon = {
 const statusClass = {
   pending: "text-muted-foreground opacity-50",
   running: "text-primary",
-  done: "text-emerald-600",
+  done: "text-success",
   error: "text-destructive",
   skipped: "text-border opacity-40",
 };
@@ -108,12 +109,14 @@ export default function ActivityLog({ stageStatus, log, phase, error, onRetry })
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span className="flex-1 leading-snug">{error}</span>
           {onRetry && (
-            <button
+            <Button
               onClick={onRetry}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-destructive/30 bg-background hover:bg-destructive/5 text-xs font-medium transition-colors"
+              variant="outline"
+              size="sm"
+              className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
             >
               Retry
-            </button>
+            </Button>
           )}
         </div>
       )}

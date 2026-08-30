@@ -146,12 +146,12 @@ function App() {
 
       {/* Top bar */}
       <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border">
-        <div className="max-w-[1080px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-[1080px] mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
           <a href="/" className="flex items-center gap-2">
             <img
               src="/logo/lockup_horizontal.png"
               alt="Insaaf AI"
-              className="h-7 w-auto"
+              className="h-14 w-auto mix-blend-multiply"
             />
           </a>
           <span className="hidden sm:inline-block font-mono text-2xs uppercase tracking-widest text-muted-foreground">
@@ -213,7 +213,7 @@ function App() {
                     <span className="font-mono text-2xs uppercase tracking-wide text-muted-foreground">
                       Trust Report
                     </span>
-                    <span className="font-mono text-[10px] font-semibold uppercase tracking-wide text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                    <span className="font-mono text-[10px] font-semibold uppercase tracking-wide text-success bg-success/10 px-2 py-0.5 rounded">
                       Certified
                     </span>
                   </div>
@@ -428,7 +428,7 @@ function App() {
                         </p>
                       )}
                       {autoDetectParts.length > 0 && (
-                        <p className="inline-flex items-center gap-1.5 mt-3 font-mono text-2xs text-amber-700 bg-amber-50 rounded px-2.5 py-1">
+                        <p className="inline-flex items-center gap-1.5 mt-3 font-mono text-2xs text-accent bg-accent/10 rounded px-2.5 py-1">
                           <Info className="w-3 h-3" />
                           Auto-detected: {autoDetectParts.join(", ")}
                         </p>
@@ -485,7 +485,7 @@ function App() {
                         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="hsl(var(--border))" />
                         <XAxis
                           type="number"
-                          tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "#6B7280" }}
+                          tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                           axisLine={false}
                           tickLine={false}
                         />
@@ -493,7 +493,7 @@ function App() {
                           type="category"
                           dataKey="feature"
                           width={100}
-                          tick={{ fontFamily: "IBM Plex Mono", fontSize: 12, fill: "#374151" }}
+                          tick={{ fontFamily: "IBM Plex Mono", fontSize: 12, fill: "hsl(var(--foreground))" }}
                           axisLine={false}
                           tickLine={false}
                         />
@@ -504,6 +504,7 @@ function App() {
                             borderRadius: "var(--radius)",
                             fontFamily: "IBM Plex Mono",
                             fontSize: 12,
+                            color: "hsl(var(--foreground))",
                           }}
                         />
                         <Bar dataKey="importance" radius={[0, 4, 4, 0]}>
@@ -512,7 +513,7 @@ function App() {
                               key={i}
                               fill={
                                 f.feature === result.config_used.protected_attribute
-                                  ? "#DC2626"
+                                  ? "hsl(var(--destructive))"
                                   : "hsl(var(--primary))"
                               }
                             />
@@ -733,7 +734,7 @@ function MetricCard({ label, pass, value, detail }) {
       <div
         className={cn(
           "absolute left-0 top-0 bottom-0 w-1",
-          pass ? "bg-emerald-600" : "bg-destructive"
+          pass ? "bg-success" : "bg-destructive"
         )}
       />
       <CardContent className="p-6">
@@ -744,7 +745,7 @@ function MetricCard({ label, pass, value, detail }) {
           <p
             className={cn(
               "font-display text-3xl font-bold tracking-tight tabular-nums mb-2",
-              pass ? "text-emerald-600" : "text-destructive"
+              pass ? "text-success" : "text-destructive"
             )}
           >
             {value}
@@ -762,7 +763,7 @@ function ScoreItem({ label, value, projected }) {
       <span
         className={cn(
           "font-display text-5xl font-bold leading-none",
-          projected ? "text-emerald-600" : "text-foreground"
+          projected ? "text-success" : "text-foreground"
         )}
       >
         {value}
@@ -783,7 +784,7 @@ function MiniMetric({ label, value, projected }) {
       <span
         className={cn(
           "font-mono text-lg font-semibold tabular-nums",
-          projected ? "text-emerald-600" : "text-foreground"
+          projected ? "text-success" : "text-foreground"
         )}
       >
         {value}
