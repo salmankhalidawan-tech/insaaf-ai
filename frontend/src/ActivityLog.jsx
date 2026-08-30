@@ -1,6 +1,23 @@
-import Icon from "./Icon";
+import { Activity, Check, Circle, AlertCircle, Loader2 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { AUDIT_STAGES } from "./auditStream";
-import "./ActivityLog.css";
+import { cn } from "@/lib/utils";
+
+const statusIcon = {
+  pending: Circle,
+  running: Loader2,
+  done: Check,
+  error: AlertCircle,
+  skipped: Circle,
+};
+
+const statusClass = {
+  pending: "text-muted-foreground opacity-50",
+  running: "text-primary",
+  done: "text-emerald-600",
+  error: "text-destructive",
+  skipped: "text-border opacity-40",
+};
 
 export default function ActivityLog({ stageStatus, log, phase, error, onRetry }) {
   const total = AUDIT_STAGES.length;
@@ -9,57 +26,77 @@ export default function ActivityLog({ stageStatus, log, phase, error, onRetry })
   const isFinished = phase === "complete" || phase === "error";
 
   return (
-    <div className="activity-card card">
-      <div className="activity-header">
-        <div className="activity-header-left">
-          <Icon name="activity" size={18} stroke="var(--accent)" />
-          <span className="activity-title">Audit progress</span>
+    <div
+      className={cn(
+        "rounded-xl border border-border bg-card p-6 shadow-sm transition-opacity",
+        isFinished && "opacity-80"
+      )}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Activity className="w-[18px] h-[18px] text-primary" />
+          <span className="font-mono text-xs font-semibold uppercase tracking-wide text-secondary-foreground">
+            Audit progress
+          </span>
         </div>
-        <span className="activity-counter">
+        <span className="font-mono text-xs text-muted-foreground tabular-nums">
           {doneCount}/{total}
         </span>
       </div>
 
-      <div className="activity-progress-track">
-        <div
-          className="activity-progress-bar"
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
+      <Progress value={progressPct} className="h-1.5 mb-5" />
 
       <ol
-        className={`activity-log ${isFinished ? "activity-log--finished" : ""}`}
+        className="relative space-y-0"
         aria-live="polite"
         aria-busy={phase === "streaming" || phase === "legacy"}
       >
+        <li
+          className="absolute left-[11px] top-2 bottom-2 w-px bg-border"
+          aria-hidden="true"
+        />
         {AUDIT_STAGES.map((stage, i) => {
           const status = stageStatus[stage.key] || "pending";
           const logEntry = log.find((r) => r.key === stage.key);
           const label = logEntry?.label || stage.label;
+          const Icon = statusIcon[status];
 
           return (
             <li
               key={stage.key}
-              className={`activity-row activity-row--${status}`}
-              style={{ "--i": i }}
+              className={cn(
+                "relative grid grid-cols-[24px_1fr] gap-3 items-center py-2",
+                status === "running" && "opacity-100",
+                status === "pending" && "opacity-50",
+                status === "skipped" && "opacity-40"
+              )}
+              style={{ animationDelay: `${i * 60}ms` }}
               aria-current={status === "running" ? "step" : undefined}
             >
-              <span className="activity-icon">
-                {status === "pending" && (
-                  <Icon name="circle" size={14} stroke="var(--text-muted)" />
+              <span
+                className={cn(
+                  "z-10 flex items-center justify-center w-6 h-6 rounded-full bg-card",
+                  status === "running" && "animate-pulse"
                 )}
-                {status === "running" && <span className="activity-spinner" />}
-                {status === "done" && (
-                  <Icon name="check" size={14} stroke="var(--success)" />
-                )}
-                {status === "error" && (
-                  <Icon name="alertCircle" size={14} stroke="var(--danger)" />
-                )}
-                {status === "skipped" && (
-                  <Icon name="circle" size={14} stroke="var(--border-strong)" />
-                )}
+              >
+                <Icon
+                  className={cn(
+                    "w-3.5 h-3.5",
+                    status === "running" && "animate-spin",
+                    statusClass[status]
+                  )}
+                />
               </span>
-              <span className="activity-label">{label}</span>
+              <span
+                className={cn(
+                  "text-sm",
+                  status === "done" && "text-secondary-foreground",
+                  status === "error" && "text-destructive font-medium",
+                  status !== "done" && status !== "error" && "text-foreground"
+                )}
+              >
+                {label}
+              </span>
               <span className="sr-only">{status}</span>
             </li>
           );
@@ -67,12 +104,14 @@ export default function ActivityLog({ stageStatus, log, phase, error, onRetry })
       </ol>
 
       {phase === "error" && error && (
-        <div className="activity-error">
-          <Icon name="alertCircle" size={16} stroke="var(--danger)" />
-          <span className="activity-error-text">{error}</span>
+        <div className="flex items-center gap-3 mt-4 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span className="flex-1 leading-snug">{error}</span>
           {onRetry && (
-            <button className="btn btn-outline btn-sm" onClick={onRetry}>
-              <Icon name="refreshCw" size={14} />
+            <button
+              onClick={onRetry}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-destructive/30 bg-background hover:bg-destructive/5 text-xs font-medium transition-colors"
+            >
               Retry
             </button>
           )}

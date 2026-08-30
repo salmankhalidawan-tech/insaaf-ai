@@ -5,6 +5,7 @@ export const AUDIT_STAGES = [
   { key: "explainability", label: "Explaining the results" },
   { key: "translation",    label: "Preparing the Urdu report" },
   { key: "reporting",      label: "Calculating the trust score" },
+  { key: "mitigation",     label: "Suggesting a fix" },
   { key: "pdf_generation", label: "Generating the PDF report" },
 ];
 
