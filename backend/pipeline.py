@@ -22,6 +22,7 @@ from agents.intake_agent import IntakeAgent
 from agents.bias_detection_agent import BiasDetectionAgent
 from agents.explainability_agent import ExplainabilityAgent
 from agents.reporting_agent import ReportingAgent
+from agents.mitigation_agent import MitigationAgent
 from auto_detect import detect_positive_outcome, detect_privileged_value, build_auto_detect_meta
 
 
@@ -90,6 +91,9 @@ class InsaafPipeline:
             protected_attribute=cfg["protected_attribute"],
         ).run()
 
+    def stage_mitigation(self, bias_result: Dict) -> Dict:
+        return MitigationAgent(df=self.df, bias_result=bias_result).run()
+
     def build_config_used(self, cfg: Dict) -> Dict:
         return {
             "protected_attribute": cfg["protected_attribute"],
@@ -127,10 +131,14 @@ class InsaafPipeline:
         reporting_agent = ReportingAgent(intake_result, bias_result, explainability_result)
         report = reporting_agent.run()
 
+        # Stage 6: Mitigation (suggests a fix and projects improvement)
+        mitigation_result = self.stage_mitigation(bias_result)
+
         return {
             "intake": intake_result,
             "bias_detection": bias_result,
             "explainability": explainability_result,
             "report": report,
+            "mitigation": mitigation_result,
             "config_used": self.build_config_used(cfg),
         }

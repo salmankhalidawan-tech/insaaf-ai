@@ -196,6 +196,20 @@ def build_insaaf_crew(
         state["results"]["config_used"] = state.get("resolved_config", {})
         return json.dumps(result)
 
+    @tool
+    def mitigation_tool(query: str) -> str:
+        """Suggest a fairness intervention and project the improvement in Disparate Impact Ratio and Trust Score."""
+        from agents.mitigation_agent import MitigationAgent
+
+        bias = state["results"].get("bias_detection", {})
+        if isinstance(bias, dict) and "stage_failed" in bias:
+            return json.dumps({"mitigation_applied": None, "explanation": "Bias detection failed; no mitigation projected."})
+
+        agent = MitigationAgent(state["df"], bias)
+        result = agent.run()
+        state["results"]["mitigation"] = result
+        return json.dumps(result)
+
     # ------------------------------------------------------------------
     # Agents
     # ------------------------------------------------------------------
@@ -253,6 +267,20 @@ def build_insaaf_crew(
         verbose=False,
     )
 
+    mitigation_agent = Agent(
+        role="Fairness Engineer",
+        goal="Recommend a concrete bias mitigation and show the projected improvement.",
+        backstory=(
+            "You are a fairness engineer. You analyze the detected bias and "
+            "propose a reweighing intervention that balances representation "
+            "across privileged and unprivileged groups, then estimate the "
+            "new Disparate Impact Ratio and Trust Score."
+        ),
+        tools=[mitigation_tool],
+        llm=llm,
+        verbose=False,
+    )
+
     # ------------------------------------------------------------------
     # Tasks – one per agent, in pipeline order
     # ------------------------------------------------------------------
@@ -293,9 +321,20 @@ def build_insaaf_crew(
         agent=reporting_agent,
     )
 
+    mitigation_task = Task(
+        description=(
+            "Use the mitigation_tool to suggest a reweighing fix and return "
+            "the projected Disparate Impact Ratio and Trust Score. "
+            "Return the tool's JSON output as-is."
+        ),
+        expected_output="JSON with mitigation_applied, original_dir, projected_dir, original_trust_score, projected_trust_score, explanation, code_snippet.",
+        agent=mitigation_agent,
+        context=[report_task],
+    )
+
     crew = Crew(
-        agents=[intake_agent, bias_agent, explain_agent, reporting_agent],
-        tasks=[intake_task, bias_task, explain_task, report_task],
+        agents=[intake_agent, bias_agent, explain_agent, reporting_agent, mitigation_agent],
+        tasks=[intake_task, bias_task, explain_task, report_task, mitigation_task],
         process=Process.sequential,
         verbose=False,
     )

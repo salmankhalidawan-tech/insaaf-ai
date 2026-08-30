@@ -1,49 +1,75 @@
 # Insaaf AI
-**Auditing AI for a Fairer Pakistan.**
 
-Insaaf AI is a bilingual, multi-agent AI accountability auditor. Upload any
-AI system's decision data (loan approvals, hiring, admissions, etc.) and it
-detects bias, explains why, and issues a Trust Score with a full report in
-English and Urdu.
+**Auditing AI for a fairer Pakistan.**
 
-Built for the Alibaba Cloud AI Hackathon Pakistan 2026 (Open Innovation track).
+Insaaf AI is a bilingual, multi-agent AI accountability auditor. Upload any AI system's decision data — loan approvals, hiring, admissions — and it detects bias, explains why, and issues a Trust Score with a full report in English and Urdu.
 
-## Architecture
+Built for the **Alibaba Cloud AI Hackathon Pakistan 2026** (Open Innovation track), hosted by Alkhidmat Foundation Pakistan on the Bano Qabil platform.
+
+---
+
+## How it works
 
 ```
-Upload (CSV) -> Intake Agent -> Bias Detection Agent -> Explainability Agent (SHAP)
-                                                              |
-                                                              v
-                                          Reporting Agent <- Translation Agent
-                                                              |
-                                                              v
-                                            Trust Score + bilingual PDF report
+Upload (CSV)
+     │
+     ▼
+Intake Agent            validates the data, detects the protected attribute and outcome column
+     │
+     ▼
+Bias Detection Agent     Disparate Impact Ratio, Equal Opportunity Difference (80% rule)
+     │
+     ▼
+Explainability Agent     SHAP feature importance — shows *why*, not just *that*
+     │
+     ▼
+Translation Agent        bilingual English + Urdu summary
+     │
+     ▼
+Reporting Agent          Trust Score (0–100) + certified seal + downloadable PDF
 ```
+
+Orchestrated as a CrewAI multi-agent crew, with live streamed progress (SSE) shown in the UI as each agent runs.
+
+## Try it
+
+Two datasets ship with the project:
+
+| Dataset | What it shows |
+|---|---|
+| `backend/data/pakistani_loan_admissions.csv` | Synthetic Pakistani lending data — urban bias (major vs. minor cities, DIR 0.68) and a secondary gender gap (DIR 0.82) |
+| `backend/data/uci_adult_income.csv` | Public UCI Adult Income benchmark, used to externally validate the fairness metrics (DIR 0.31 on gender — see `backend/data/VALIDATION.md`) |
 
 ## Project structure
 
 ```
 insaaf-ai/
-  backend/
-    agents/
-      intake_agent.py          # dataset validation, protected-attribute detection
-      bias_detection_agent.py  # Disparate Impact Ratio, Equal Opportunity Difference
-      explainability_agent.py  # SHAP feature importance
-      translation_agent.py     # English -> Urdu (offline fallback + free HF API path)
-      reporting_agent.py       # Trust Score formula + bilingual PDF generation
-    fonts/                     # Noto Naskh Arabic (free, OFL) - renders Urdu in PDFs
-    data/sample_loan_data.csv  # synthetic demo dataset with a real gender gap
-    pipeline.py                # orchestrates all 5 agents in sequence
-    main.py                    # FastAPI app
-    requirements.txt
-  frontend/
-    src/App.jsx                # upload flow + results dashboard
-    src/Seal.jsx                # "Insaaf Certified" seal component
-    src/TrustDial.jsx           # circular Trust Score gauge
-    src/App.css, src/index.css  # design system (case-dossier aesthetic)
+├── backend/
+│   ├── agents/
+│   │   ├── intake_agent.py           # validation + protected-attribute detection
+│   │   ├── bias_detection_agent.py   # Disparate Impact Ratio, Equal Opportunity Difference
+│   │   ├── explainability_agent.py   # SHAP feature importance
+│   │   ├── translation_agent.py      # English → Urdu (offline fallback + free HF API path)
+│   │   └── reporting_agent.py        # Trust Score + bilingual, watermarked PDF
+│   ├── crew.py                       # CrewAI orchestration
+│   ├── streaming.py                  # live SSE progress events
+│   ├── pipeline.py                   # sequential fallback pipeline
+│   ├── main.py                       # FastAPI app
+│   ├── data/                         # sample + Pakistani + UCI datasets, VALIDATION.md
+│   ├── fonts/                        # Noto Naskh Arabic (free, OFL) — renders Urdu in PDFs
+│   ├── assets/                       # logo watermark for PDF reports
+│   └── requirements.txt
+└── frontend/
+    ├── src/App.jsx                   # upload flow + results dashboard
+    ├── src/ActivityLog.jsx           # live per-agent progress log
+    ├── src/Seal.jsx                  # "Insaaf Certified" seal
+    ├── src/TrustDial.jsx             # circular Trust Score gauge
+    └── public/logo/                  # brand mark, favicon
 ```
 
-## Running the backend
+## Running it locally
+
+**Backend**
 
 ```bash
 cd backend
@@ -51,21 +77,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Test it immediately with the bundled sample dataset:
-
-```bash
-curl -X POST http://localhost:8000/api/audit \
-  -F "file=@data/sample_loan_data.csv" \
-  -F "protected_attribute=gender" \
-  -F "privileged_value=male" \
-  -F "positive_outcome_value=approved"
-```
-
-This sample dataset was built with a deliberate ~13% vs ~87% approval gap
-between genders, so a fresh install immediately shows a real, non-trivial
-audit result (Disparate Impact Ratio ~0.16, fails the 80% rule).
-
-## Running the frontend
+**Frontend**
 
 ```bash
 cd frontend
@@ -73,38 +85,33 @@ npm install
 npm run dev
 ```
 
-Set `VITE_API_BASE_URL` in a `.env` file if your backend isn't on
-`http://localhost:8000`.
+Set `VITE_API_BASE_URL` in a `frontend/.env` file if the backend isn't on `http://localhost:8000`.
 
-## What is genuinely free in this stack
+**Quick test via API**
 
-- FastAPI, pandas, scikit-learn, SHAP, fpdf2, arabic-reshaper, python-bidi: open source, no cost.
-- Noto Naskh Arabic font: free, OFL-licensed (Google Fonts).
-- React, Vite, recharts: open source, no cost.
-- Translation: ships with a zero-cost offline dictionary fallback for the
-  app's own report vocabulary. `agents/translation_agent.py` has a ready
-  path to the free-tier Hugging Face Inference API for open-ended text -
-  set `USE_HF_API = True` and an `HF_API_TOKEN` environment variable to
-  enable it.
+```bash
+curl -X POST http://localhost:8000/api/audit \
+  -F "file=@data/pakistani_loan_admissions.csv" \
+  -F "protected_attribute=gender" \
+  -F "privileged_value=male" \
+  -F "positive_outcome_value=approved"
+```
 
-## What's left to build (see the hackathon delivery plan)
+## What's genuinely free in this stack
 
-- Wrap `pipeline.py`'s sequential calls in an actual CrewAI `Crew` object
-  (one `Agent` + `Task` per stage) - the agent logic itself does not need
-  to change, only the orchestration layer. Good first task for Qoder's
-  Agent Mode.
+- FastAPI, pandas, scikit-learn, SHAP, CrewAI, fpdf2, arabic-reshaper, python-bidi — open source, no cost.
+- Noto Naskh Arabic font — free, OFL-licensed.
+- React, Vite, recharts — open source, no cost.
+- Translation ships with a zero-cost offline dictionary fallback for the app's own report vocabulary, with a ready path to the free-tier Hugging Face Inference API (`USE_HF_API` + `HF_API_TOKEN` in `translation_agent.py`) for open-ended text.
+
+## Known limitations
+
+- Fairness metrics assume a binary or grouped protected attribute (e.g. one city group vs. another) against a binary outcome.
+- Equal Opportunity Difference requires a separate ground-truth outcome column; without one, only Disparate Impact Ratio is computed.
+- The offline Urdu fallback covers the app's own fixed report vocabulary, not open-ended translation.
+
+## Roadmap
+
 - PostgreSQL persistence for audit history (currently stateless).
-- A second demo dataset reflecting Pakistani loan/admissions data at
-  larger scale, for the live demo.
-- Basic auth on the API before this goes beyond a demo.
-
-## Known limitations to flag honestly to judges
-
-- Fairness metrics currently assume a binary protected attribute
-  (privileged vs. everyone else) and a binary outcome. Multi-category
-  attributes (e.g. multiple provinces) would need a one-vs-rest extension.
-- Equal Opportunity Difference requires a ground-truth outcome column
-  separate from the model's prediction column; without one, only
-  Disparate Impact Ratio is computed.
-- The offline translation fallback covers the app's own fixed report
-  vocabulary, not open-ended text - it is not a general translator.
+- Basic API authentication before this goes beyond a demo.
+- One-vs-rest extension for multi-category protected attributes beyond two groups.

@@ -19,6 +19,7 @@ import pandas as pd
 
 from pipeline import InsaafPipeline
 from agents.reporting_agent import ReportingAgent
+from agents.mitigation_agent import MitigationAgent
 
 STAGE_ORDER = [
     "upload",
@@ -27,6 +28,7 @@ STAGE_ORDER = [
     "explainability",
     "translation",
     "reporting",
+    "mitigation",
     "pdf_generation",
 ]
 
@@ -43,6 +45,8 @@ STAGE_LABELS = {
                        "done":    "Urdu report prepared"},
     "reporting":      {"running": "Calculating the trust score",
                        "done":    "Trust report compiled"},
+    "mitigation":     {"running": "Suggesting a fix",
+                       "done":    "Mitigation projected"},
     "pdf_generation": {"running": "Generating the PDF report",
                        "done":    "PDF report ready"},
 }
@@ -159,6 +163,15 @@ async def audit_event_stream(
             "config_used": pipeline.build_config_used(cfg),
         }
         yield _stage_event("reporting", "done", f"Trust Score {report['trust_score']}/100")
+
+        # ── mitigation ────────────────────────────────────────────────
+        yield _stage_event("mitigation", "running")
+        mitigation_result = await asyncio.to_thread(MitigationAgent(df, bias).run)
+        result["mitigation"] = mitigation_result
+        yield _stage_event(
+            "mitigation", "done",
+            f"Projected Trust Score {mitigation_result.get('projected_trust_score', report['trust_score'])}/100"
+        )
 
         # ── pdf_generation ────────────────────────────────────────────
         yield _stage_event("pdf_generation", "running")
