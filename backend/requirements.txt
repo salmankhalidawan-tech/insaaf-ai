@@ -1,0 +1,20 @@
+fastapi>=0.141.0
+uvicorn[standard]>=0.52.0
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.0
+shap==0.45.1
+fpdf2==2.7.9
+python-multipart==0.0.9
+pydantic>=2.12.0
+requests==2.32.3
+arabic-reshaper==3.0.0
+python-bidi==0.4.2
+
+# Multi-agent orchestration (CrewAI) + local/free LLM providers.
+# Free-tier Groq is pre-configured in backend/crew.py; set GROQ_API_KEY to use it.
+# Ollama can be used instead by setting OLLAMA_HOST / OLLAMA_MODEL.
+crewai>=1.15.0
+groq>=1.7.0
+litellm>=1.98.0
+python-dotenv>=1.0.0
