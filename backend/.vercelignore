@@ -1,0 +1,6 @@
+data/pakistani_loan_admissions.csv
+data/uci_adult_income.csv
+generated_reports/
+venv/
+__pycache__/
+*.pyc

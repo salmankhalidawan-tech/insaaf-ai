@@ -115,5 +115,3 @@ curl -X POST http://localhost:8000/api/audit \
 - PostgreSQL persistence for audit history (currently stateless).
 - Basic API authentication before this goes beyond a demo.
 - One-vs-rest extension for multi-category protected attributes beyond two groups.
-- One-vs-rest extension for multi-category protected attributes beyond two groups.
-
